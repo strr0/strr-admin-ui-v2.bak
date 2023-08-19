@@ -1,7 +1,7 @@
 <template>
   <div class="h-full overflow-hidden">
     <n-card title="资源管理" :bordered="false" class="rounded-16px shadow-sm">
-      <n-data-table :columns="columns" :data="tableData" :row-key="row => row.id" :loading="loading" />
+      <n-data-table :columns="columns" :data="tableData" :row-key="item => item.id" :loading="loading" />
     </n-card>
   </div>
 </template>

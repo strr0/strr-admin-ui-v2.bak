@@ -72,16 +72,15 @@ export class CustomAxiosInstance {
             return handleServiceResult(null, backend[dataKey]);
           }
 
-          // token失效, 刷新token
-          if (REFRESH_TOKEN_CODE.includes(backend[codeKey])) {
-            const config = await handleRefreshToken(response.config);
-            if (config) {
-              return this.instance.request(config);
-            }
-          }
-
           const error = handleBackendError(backend, this.backendConfig);
           return handleServiceResult(error, null);
+        }
+        // token失效, 刷新token
+        if (status === 401) {
+          const config = await handleRefreshToken(response.config);
+          if (config) {
+            return this.instance.request(config);
+          }
         }
         const error = handleResponseError(response);
         return handleServiceResult(error, null);

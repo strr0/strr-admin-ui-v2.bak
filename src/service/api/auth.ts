@@ -65,5 +65,10 @@ export function fetchUserRoutes() {
  * @param refreshToken
  */
 export function fetchUpdateToken(refreshToken: string) {
-  return request.post<ApiAuth.Token>('/updateToken', { refreshToken });
+  return request.post<ApiAuth.Token>('/authservice/oauth2/token', qs.stringify({
+    grant_type: 'refresh_token',
+    client_id: 'WEB_CLIENT',
+    client_secret: 'WEB_SECRET',
+    refresh_token: refreshToken
+  }));
 }

@@ -24,7 +24,7 @@
           <column-setting v-model:columns="columns" />
         </n-space>
       </n-space> -->
-      <n-data-table :columns="columns" :data="tableData" :loading="loading" :pagination="pagination" />
+      <n-data-table :columns="columns" :data="tableData" :row-key="item => item.id" :loading="loading" :pagination="pagination" />
       <!-- <table-action-modal v-model:visible="visible" :type="modalType" :edit-data="editData" /> -->
     </n-card>
   </div>
