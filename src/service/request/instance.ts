@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosInstance } from 'axios';
 import type { AxiosResponse, AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
 import { REFRESH_TOKEN_CODE } from '@/config';
 import {
@@ -49,7 +49,10 @@ export class CustomAxiosInstance {
           const contentType = handleConfig.headers['Content-Type'] as UnionKey.ContentType;
           handleConfig.data = await transformRequestData(handleConfig.data, contentType);
           // 设置token
-          handleConfig.headers.Authorization = localStg.get('token') || '';
+          const token = localStg.get('token')
+          if (Boolean(token)) {
+            handleConfig.headers.Authorization = `Bearer ${token}`;
+          }
         }
         return handleConfig;
       },
@@ -112,6 +115,54 @@ export class AuthAxiosInstance {
         if (responseURL.includes('code')) {
           return handleServiceResult(null, responseURL)
         }
+        const error = handleAxiosError(axiosError)
+        return handleServiceResult(error, null)
+      }
+    )
+  }
+}
+
+export class PageAxiosInstance {
+  instance: AxiosInstance;
+
+  constructor(
+    axiosConfig: AxiosRequestConfig
+  ) {
+    this.instance = axios.create(axiosConfig);
+    this.setInterceptor();
+  }
+
+  setInterceptor() {
+    this.instance.interceptors.request.use(
+      async config => {
+        const handleConfig = { ...config };
+        if (handleConfig.headers) {
+          // 数据转换
+          const contentType = handleConfig.headers['Content-Type'] as UnionKey.ContentType;
+          handleConfig.data = await transformRequestData(handleConfig.data, contentType);
+          // 设置token
+          const token = localStg.get('token')
+          if (Boolean(token)) {
+            handleConfig.headers.Authorization = `Bearer ${token}`;
+          }
+        }
+        return handleConfig;
+      },
+      (axiosError: AxiosError) => {
+        const error = handleAxiosError(axiosError);
+        return handleServiceResult(error, null);
+      }
+    );
+    this.instance.interceptors.response.use(
+      (async response => {
+        const { status } = response;
+        if (status === 200 || status < 300 || status === 304) {
+          return handleServiceResult(null, response.data);
+        }
+        const error = handleResponseError(response);
+        return handleServiceResult(error, null);
+      }) as (resp: AxiosResponse<any, any>) => Promise<AxiosResponse<any, any>>,
+      (axiosError: AxiosError) => {
         const error = handleAxiosError(axiosError)
         return handleServiceResult(error, null)
       }

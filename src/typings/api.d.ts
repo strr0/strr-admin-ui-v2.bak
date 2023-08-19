@@ -21,3 +21,42 @@ declare namespace ApiRoute {
     home: AuthRoute.AllRouteKey;
   }
 }
+
+declare namespace ApiPageResult {
+  interface Page<T> {
+    content: T[];
+    page: number;
+    size: number;
+    total: number;
+  }
+}
+
+declare namespace ApiManagement {
+  interface User {
+    id: number;
+    username: string;
+    nickname: string;
+    email: string;
+    avatar: string;
+    remark: string;
+    status: boolean;
+  }
+  interface Role {
+    id: number;
+    name: string;
+    title: string;
+    status: boolean;
+  }
+  interface Resource {
+    id: number;
+    name: string;
+    path: string;
+    component: string;
+    title: string;
+    type: string;
+    icon: string;
+    parentId: number;
+    order: number;
+    status: boolean;
+  }
+}
