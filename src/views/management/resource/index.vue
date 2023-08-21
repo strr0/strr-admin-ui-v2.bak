@@ -11,6 +11,7 @@ import { h, reactive, ref } from 'vue';
 import type { Ref } from 'vue';
 import { NButton, NPopconfirm, NSpace, NTag } from 'naive-ui';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
+import { resourceTypeLables } from '@/constants';
 import { fetchResourceList } from '@/service';
 import { useBoolean, useLoading } from '@/hooks';
 
@@ -66,7 +67,13 @@ const columns: Ref<DataTableColumns<ApiManagement.Resource>> = ref([
   {
     key: 'type',
     title: '类型',
-    align: 'center'
+    align: 'center',
+    render: row => {
+      if (row.type) {
+        return h('span', resourceTypeLables[row.type]);
+      }
+      return <span></span>;
+    }
   },
   {
     key: 'icon',

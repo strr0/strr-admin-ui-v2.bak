@@ -39,13 +39,13 @@ declare namespace ApiManagement {
     email: string;
     avatar: string;
     remark: string;
-    status: boolean;
+    status: string;
   }
   interface Role {
     id: number;
     name: string;
     title: string;
-    status: boolean;
+    status: string;
   }
   interface Resource {
     id: number;
@@ -57,6 +57,6 @@ declare namespace ApiManagement {
     icon: string;
     parentId: number;
     order: number;
-    status: boolean;
+    status: string;
   }
 }

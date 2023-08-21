@@ -11,6 +11,7 @@ import { h, reactive, ref } from 'vue';
 import type { Ref } from 'vue';
 import { NButton, NPopconfirm, NSpace, NTag } from 'naive-ui';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
+import { statusLabels } from '@/constants';
 import { fetchRoleList } from '@/service';
 import { useBoolean, useLoading } from '@/hooks';
 
@@ -55,6 +56,21 @@ const columns: Ref<DataTableColumns<ApiManagement.Role>> = ref([
     key: 'title',
     title: '标题',
     align: 'center'
+  },
+  {
+    key: 'status',
+    title: '状态',
+    align: 'center',
+    render: row => {
+      if (row.status) {
+        const tagTypes: Record<number, NaiveUI.ThemeColor> = {
+          1: 'success',
+          0: 'default'
+        };
+        return <NTag type={tagTypes[row.status]}>{statusLabels[row.status]}</NTag>;
+      }
+      return <span></span>;
+    }
   },
   {
     key: 'actions',

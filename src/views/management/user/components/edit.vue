@@ -2,25 +2,23 @@
   <n-modal v-model:show="modalVisible" preset="card" :title="title" class="w-700px">
     <n-form ref="formRef" label-placement="left" :label-width="80" :model="formModel" :rules="rules">
       <n-grid :cols="24" :x-gap="18">
-        <n-form-item-grid-item :span="12" label="用户名" path="userName">
-          <n-input v-model:value="formModel.userName" />
+        <n-form-item-grid-item :span="12" label="用户名" path="username">
+          <n-input v-model:value="formModel.username" />
         </n-form-item-grid-item>
-        <n-form-item-grid-item :span="12" label="年龄" path="age">
-          <n-input-number v-model:value="formModel.age" clearable />
-        </n-form-item-grid-item>
-        <n-form-item-grid-item :span="12" label="性别" path="gender">
-          <n-radio-group v-model:value="formModel.gender">
-            <n-radio v-for="item in genderOptions" :key="item.value" :value="item.value">{{ item.label }}</n-radio>
-          </n-radio-group>
-        </n-form-item-grid-item>
-        <n-form-item-grid-item :span="12" label="手机号" path="phone">
-          <n-input v-model:value="formModel.phone" />
+        <n-form-item-grid-item :span="12" label="昵称" path="nickname">
+          <n-input v-model:value="formModel.nickname" />
         </n-form-item-grid-item>
         <n-form-item-grid-item :span="12" label="邮箱" path="email">
           <n-input v-model:value="formModel.email" />
         </n-form-item-grid-item>
-        <n-form-item-grid-item :span="12" label="状态" path="userStatus">
-          <n-select v-model:value="formModel.userStatus" :options="userStatusOptions" />
+        <n-form-item-grid-item :span="12" label="头像" path="avatar">
+          <n-input v-model:value="formModel.avatar" />
+        </n-form-item-grid-item>
+        <n-form-item-grid-item :span="12" label="说明" path="remark">
+          <n-input v-model:value="formModel.remark" />
+        </n-form-item-grid-item>
+        <n-form-item-grid-item :span="12" label="状态" path="status">
+          <n-select v-model:value="formModel.status" :options="statusOptions" />
         </n-form-item-grid-item>
       </n-grid>
       <n-space class="w-full pt-16px" :size="24" justify="end">
@@ -34,7 +32,7 @@
 <script setup lang="ts">
 import { ref, computed, reactive, watch } from 'vue';
 import type { FormInst, FormItemRule } from 'naive-ui';
-import { genderOptions, userStatusOptions } from '@/constants';
+import { statusOptions } from '@/constants';
 import { formRules, createRequiredFormRule } from '@/utils';
 
 export interface Props {
@@ -47,12 +45,12 @@ export interface Props {
    */
   type?: 'add' | 'edit';
   /** 编辑的表格行数据 */
-  editData?: UserManagement.User | null;
+  editData?: ApiManagement.User | null;
 }
 
 export type ModalType = NonNullable<Props['type']>;
 
-defineOptions({ name: 'TableActionModal' });
+defineOptions({ name: 'UserEdit' });
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'add',
@@ -87,27 +85,24 @@ const title = computed(() => {
 
 const formRef = ref<HTMLElement & FormInst>();
 
-type FormModel = Pick<UserManagement.User, 'userName' | 'age' | 'gender' | 'phone' | 'email' | 'userStatus'>;
+type FormModel = Pick<ApiManagement.User, 'username' | 'nickname' | 'email' | 'avatar' | 'remark' | 'status'>;
 
 const formModel = reactive<FormModel>(createDefaultFormModel());
 
 const rules: Record<keyof FormModel, FormItemRule | FormItemRule[]> = {
-  userName: createRequiredFormRule('请输入用户名'),
-  age: createRequiredFormRule('请输入年龄'),
-  gender: createRequiredFormRule('请选择性别'),
-  phone: formRules.phone,
-  email: formRules.email,
-  userStatus: createRequiredFormRule('请选择用户状态')
+  username: createRequiredFormRule('请输入用户名'),
+  nickname: createRequiredFormRule('请输入昵称'),
+  email: formRules.email
 };
 
 function createDefaultFormModel(): FormModel {
   return {
-    userName: '',
-    age: null,
-    gender: null,
-    phone: '',
-    email: null,
-    userStatus: null
+    username: '',
+    nickname: '',
+    email: '',
+    avatar: '',
+    remark: '',
+    status: '0'
   };
 }
 
