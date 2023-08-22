@@ -17,7 +17,8 @@
         </n-space>
       </n-space>
       <n-data-table :columns="columns" :data="tableData" :row-key="item => item.id" :loading="loading" />
-      <resource-edit v-model:visible="visible" :type="modalType" :edit-data="editData" :resource-options="resourceOptions" />
+      <resource-show v-model:visible="showVisible" :show-data="rowData" />
+      <resource-edit v-model:visible="editVisible" :type="modalType" :edit-data="rowData" :resource-options="resourceOptions" />
     </n-card>
   </div>
 </template>
@@ -26,28 +27,34 @@
 import { h, reactive, ref } from 'vue';
 import type { Ref } from 'vue';
 import { NButton, NPopconfirm, NSpace, NTag } from 'naive-ui';
-import type { DataTableColumns, PaginationProps } from 'naive-ui';
+import type { DataTableColumns, PaginationProps, TreeSelectOption } from 'naive-ui';
 import { resourceTypeLables } from '@/constants';
 import { fetchResourceList } from '@/service';
-import { formatTreeOptions } from '@/utils'
 import { useBoolean, useLoading } from '@/hooks';
 import { useButton } from '@/composables'
 import ResourceEdit from './components/edit.vue'
+import ResourceShow from './components/show.vue'
 import type { ModalType } from './components/edit.vue';
 
 const { loading, startLoading, endLoading } = useLoading(false);
-const { bool: visible, setTrue: openModal } = useBoolean();
+const { bool: editVisible, setTrue: openEditModal } = useBoolean();
+const { bool: showVisible, setTrue: openShowModal } = useBoolean();
 const { hasButton } = useButton();
 
 const tableData = ref<ApiManagement.Resource[]>([]);
-const resourceOptions = ref<Common.OptionWithKey<number>[]>([])
+const resourceOptions = ref<TreeSelectOption[]>([])
 function setTableData(data: ApiManagement.Resource[]) {
   tableData.value = data;
-  resourceOptions.value = formatTreeOptions<ApiManagement.Resource, number>(data, (item: ApiManagement.Resource) => {
+  resourceOptions.value = formatTreeOptions(data)
+}
+
+function formatTreeOptions(data: ApiManagement.Resource[]): TreeSelectOption[] {
+  return data.map(item => {
     return {
       key: item.id,
-      label: item.title
-    } as Common.TreeOptionWithKey<number>
+      label: item.title,
+      children: item.children ? formatTreeOptions(item.children) : null
+    } as TreeSelectOption
   })
 }
 
@@ -62,6 +69,11 @@ async function getTableData() {
   }
 }
 
+const showButton: (row: any) => any = hasButton('show') ? row => (
+  <NButton size={'small'} onClick={() => handleShowTable(row)}>
+    查看
+  </NButton>
+) : row => ''
 const editButton: (row: any) => any = hasButton('edit') ? row => (
   <NButton size={'small'} onClick={() => handleEditTable(row)}>
     编辑
@@ -129,6 +141,7 @@ const columns: Ref<DataTableColumns<ApiManagement.Resource>> = ref([
     render: row => {
       return (
         <NSpace justify={'center'}>
+          {showButton(row)}
           {editButton(row)}
           {delButton(row.id)}
         </NSpace>
@@ -143,21 +156,26 @@ function setModalType(type: ModalType) {
   modalType.value = type;
 }
 
-const editData = ref<ApiManagement.Resource | null>(null);
+const rowData = ref<ApiManagement.Resource | null>(null);
 
-function setEditData(data: ApiManagement.Resource | null) {
-  editData.value = data;
+function setRowData(data: ApiManagement.Resource | null) {
+  rowData.value = data;
+}
+
+function handleShowTable(row: any) {
+  setRowData(row);
+  openShowModal();
 }
 
 function handleAddTable() {
-  openModal();
   setModalType('add');
+  openEditModal();
 }
 
 function handleEditTable(row: any) {
-  setEditData(row);
+  setRowData(row);
   setModalType('edit');
-  openModal();
+  openEditModal();
 }
 
 function handleDeleteTable(rowId: string) {

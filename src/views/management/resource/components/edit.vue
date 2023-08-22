@@ -37,7 +37,7 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive, watch } from 'vue';
-import type { FormInst, FormItemRule } from 'naive-ui';
+import type { FormInst, FormItemRule, TreeSelectOption } from 'naive-ui';
 import { resourceTypeOptions } from '@/constants';
 import { formRules, createRequiredFormRule } from '@/utils';
 
@@ -52,7 +52,7 @@ export interface Props {
   type?: 'add' | 'edit';
   /** 编辑的表格行数据 */
   editData?: ApiManagement.Resource | null;
-  resourceOptions?: Common.TreeOptionWithKey<number>[]
+  resourceOptions?: TreeSelectOption[]
 }
 
 export type ModalType = NonNullable<Props['type']>;

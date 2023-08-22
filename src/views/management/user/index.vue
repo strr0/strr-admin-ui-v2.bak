@@ -13,11 +13,11 @@
             <icon-mdi-refresh class="mr-4px text-16px" :class="{ 'animate-spin': loading }" />
             刷新表格
           </n-button>
-          <!-- <column-setting v-model:columns="columns" /> -->
         </n-space>
       </n-space>
       <n-data-table :columns="columns" :data="tableData" :row-key="item => item.id" :loading="loading" :pagination="pagination" />
-      <user-edit v-model:visible="visible" :type="modalType" :edit-data="editData" />
+      <user-show v-model:visible="showVisible" :show-data="rowData" />
+      <user-edit v-model:visible="editVisible" :type="modalType" :edit-data="rowData" />
     </n-card>
   </div>
 </template>
@@ -32,11 +32,12 @@ import { fetchUserList } from '@/service';
 import { useBoolean, useLoading } from '@/hooks';
 import { useButton } from '@/composables'
 import UserEdit from './components/edit.vue';
+import UserShow from './components/show.vue';
 import type { ModalType } from './components/edit.vue';
-// import ColumnSetting from './components/column-setting.vue';
 
 const { loading, startLoading, endLoading } = useLoading(false);
-const { bool: visible, setTrue: openModal } = useBoolean();
+const { bool: editVisible, setTrue: openEditModal } = useBoolean();
+const { bool: showVisible, setTrue: openShowModal } = useBoolean();
 const { hasButton } = useButton();
 
 const tableData = ref<ApiManagement.User[]>([]);
@@ -55,6 +56,11 @@ async function getTableData() {
   }
 }
 
+const showButton: (row: any) => any = hasButton('show') ? row => (
+  <NButton size={'small'} onClick={() => handleShowTable(row)}>
+    查看
+  </NButton>
+) : row => ''
 const editButton: (row: any) => any = hasButton('edit') ? row => (
   <NButton size={'small'} onClick={() => handleEditTable(row)}>
     编辑
@@ -124,6 +130,7 @@ const columns: Ref<DataTableColumns<ApiManagement.User>> = ref([
     render: row => {
       return (
         <NSpace justify={'center'}>
+          {showButton(row)}
           {editButton(row)}
           {delButton(row.id)}
         </NSpace>
@@ -138,21 +145,26 @@ function setModalType(type: ModalType) {
   modalType.value = type;
 }
 
-const editData = ref<ApiManagement.User | null>(null);
+const rowData = ref<ApiManagement.User | null>(null);
 
-function setEditData(data: ApiManagement.User | null) {
-  editData.value = data;
+function setRowData(data: ApiManagement.User | null) {
+  rowData.value = data;
+}
+
+function handleShowTable(row: any) {
+  setRowData(row);
+  openShowModal();
 }
 
 function handleAddTable() {
-  openModal();
   setModalType('add');
+  openEditModal();
 }
 
 function handleEditTable(row: any) {
-  setEditData(row);
+  setRowData(row);
   setModalType('edit');
-  openModal();
+  openEditModal();
 }
 
 function handleDeleteTable(rowId: string) {

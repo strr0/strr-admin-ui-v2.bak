@@ -15,7 +15,4 @@ declare namespace Common {
 
   /** 选项数据 */
   type OptionWithKey<K> = { value: K; label: string };
-
-  /** 树形选择数据 */
-  type TreeOptionWithKey<K> = { key: K; label: string; children: TreeOptionWithKey<K>[] }
 }

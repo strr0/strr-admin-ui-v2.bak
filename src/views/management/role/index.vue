@@ -17,7 +17,8 @@
         </n-space>
       </n-space>
       <n-data-table :columns="columns" :data="tableData" :row-key="item => item.id" :loading="loading" :pagination="pagination" />
-      <role-edit v-model:visible="visible" :type="modalType" :edit-data="editData" />
+      <role-alloc v-model:visible="allocVisible" :role-id="rowData?.id" />
+      <role-edit v-model:visible="editVisible" :type="modalType" :edit-data="rowData" />
     </n-card>
   </div>
 </template>
@@ -32,10 +33,12 @@ import { fetchRoleList } from '@/service';
 import { useBoolean, useLoading } from '@/hooks';
 import { useButton } from '@/composables'
 import RoleEdit from './components/edit.vue'
+import RoleAlloc from './components/alloc.vue'
 import type { ModalType } from './components/edit.vue';
 
 const { loading, startLoading, endLoading } = useLoading(false);
-const { bool: visible, setTrue: openModal } = useBoolean();
+const { bool: editVisible, setTrue: openEditModal } = useBoolean();
+const { bool: allocVisible, setTrue: openAllocModal } = useBoolean();
 const { hasButton } = useButton();
 
 const tableData = ref<ApiManagement.Role[]>([]);
@@ -54,6 +57,11 @@ async function getTableData() {
   }
 }
 
+const allocButton: (row: any) => any = hasButton('alloc') ? row => (
+  <NButton size={'small'} onClick={() => handleAllocTable(row)}>
+    资源
+  </NButton>
+) : row => ''
 const editButton: (row: any) => any = hasButton('edit') ? row => (
   <NButton size={'small'} onClick={() => handleEditTable(row)}>
     编辑
@@ -113,6 +121,7 @@ const columns: Ref<DataTableColumns<ApiManagement.Role>> = ref([
     render: row => {
       return (
         <NSpace justify={'center'}>
+          {allocButton(row)}
           {editButton(row)}
           {delButton(row.id)}
         </NSpace>
@@ -127,21 +136,26 @@ function setModalType(type: ModalType) {
   modalType.value = type;
 }
 
-const editData = ref<ApiManagement.Role | null>(null);
+const rowData = ref<ApiManagement.Role | null>(null);
 
-function setEditData(data: ApiManagement.Role | null) {
-  editData.value = data;
+function setRowData(data: ApiManagement.Role | null) {
+  rowData.value = data;
+}
+
+function handleAllocTable(row: any) {
+  setRowData(row);
+  openAllocModal();
 }
 
 function handleAddTable() {
-  openModal();
   setModalType('add');
+  openEditModal();
 }
 
 function handleEditTable(row: any) {
-  setEditData(row);
+  setRowData(row);
   setModalType('edit');
-  openModal();
+  openEditModal();
 }
 
 function handleDeleteTable(rowId: string) {

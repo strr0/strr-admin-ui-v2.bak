@@ -58,5 +58,6 @@ declare namespace ApiManagement {
     parentId: number;
     order: number;
     status: string;
+    children?: Resource[]
   }
 }
