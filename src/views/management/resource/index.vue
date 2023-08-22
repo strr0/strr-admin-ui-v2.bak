@@ -17,7 +17,7 @@
         </n-space>
       </n-space>
       <n-data-table :columns="columns" :data="tableData" :row-key="item => item.id" :loading="loading" />
-      <resource-edit v-model:visible="visible" :type="modalType" :edit-data="editData" />
+      <resource-edit v-model:visible="visible" :type="modalType" :edit-data="editData" :resource-options="resourceOptions" />
     </n-card>
   </div>
 </template>
@@ -29,6 +29,7 @@ import { NButton, NPopconfirm, NSpace, NTag } from 'naive-ui';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import { resourceTypeLables } from '@/constants';
 import { fetchResourceList } from '@/service';
+import { formatTreeOptions } from '@/utils'
 import { useBoolean, useLoading } from '@/hooks';
 import { useButton } from '@/composables'
 import ResourceEdit from './components/edit.vue'
@@ -39,8 +40,15 @@ const { bool: visible, setTrue: openModal } = useBoolean();
 const { hasButton } = useButton();
 
 const tableData = ref<ApiManagement.Resource[]>([]);
+const resourceOptions = ref<Common.OptionWithKey<number>[]>([])
 function setTableData(data: ApiManagement.Resource[]) {
   tableData.value = data;
+  resourceOptions.value = formatTreeOptions<ApiManagement.Resource, number>(data, (item: ApiManagement.Resource) => {
+    return {
+      key: item.id,
+      label: item.title
+    } as Common.TreeOptionWithKey<number>
+  })
 }
 
 async function getTableData() {

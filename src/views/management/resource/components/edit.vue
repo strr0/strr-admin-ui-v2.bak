@@ -11,6 +11,9 @@
         <n-form-item-grid-item :span="12" label="类型" path="type">
           <n-select v-model:value="formModel.type" :options="resourceTypeOptions" />
         </n-form-item-grid-item>
+        <n-form-item-grid-item :span="12" label="父节点" path="parentId">
+          <n-tree-select v-model:value="formModel.parentId" :options="resourceOptions" />
+        </n-form-item-grid-item>
         <n-form-item-grid-item :span="12" label="路由地址" path="path">
           <n-input v-model:value="formModel.path" />
         </n-form-item-grid-item>
@@ -49,6 +52,7 @@ export interface Props {
   type?: 'add' | 'edit';
   /** 编辑的表格行数据 */
   editData?: ApiManagement.Resource | null;
+  resourceOptions?: Common.TreeOptionWithKey<number>[]
 }
 
 export type ModalType = NonNullable<Props['type']>;
