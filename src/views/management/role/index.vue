@@ -1,7 +1,23 @@
 <template>
   <div class="h-full overflow-hidden">
     <n-card title="角色管理" :bordered="false" class="rounded-16px shadow-sm">
+      <n-space class="pb-12px" justify="space-between">
+        <n-space>
+          <n-button type="primary" @click="handleAddTable" v-permission="'add'">
+            <icon-ic-round-plus class="mr-4px text-20px" />
+            新增
+          </n-button>
+        </n-space>
+        <n-space align="center" :size="18">
+          <n-button size="small" type="primary" @click="getTableData">
+            <icon-mdi-refresh class="mr-4px text-16px" :class="{ 'animate-spin': loading }" />
+            刷新表格
+          </n-button>
+          <!-- <column-setting v-model:columns="columns" /> -->
+        </n-space>
+      </n-space>
       <n-data-table :columns="columns" :data="tableData" :row-key="item => item.id" :loading="loading" :pagination="pagination" />
+      <role-edit v-model:visible="visible" :type="modalType" :edit-data="editData" />
     </n-card>
   </div>
 </template>
@@ -14,9 +30,13 @@ import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import { statusLabels } from '@/constants';
 import { fetchRoleList } from '@/service';
 import { useBoolean, useLoading } from '@/hooks';
+import { useButton } from '@/composables'
+import RoleEdit from './components/edit.vue'
+import type { ModalType } from './components/edit.vue';
 
 const { loading, startLoading, endLoading } = useLoading(false);
 const { bool: visible, setTrue: openModal } = useBoolean();
+const { hasButton } = useButton();
 
 const tableData = ref<ApiManagement.Role[]>([]);
 function setTableData(data: ApiManagement.Role[]) {
@@ -33,6 +53,20 @@ async function getTableData() {
     }, 1000);
   }
 }
+
+const editButton: (row: any) => any = hasButton('edit') ? row => (
+  <NButton size={'small'} onClick={() => handleEditTable(row)}>
+    编辑
+  </NButton>
+) : row => ''
+const delButton: (id: any) => any = hasButton('del') ? id => (
+  <NPopconfirm onPositiveClick={() => handleDeleteTable(id)}>
+    {{
+      default: () => '确认删除',
+      trigger: () => <NButton size={'small'}>删除</NButton>
+    }}
+  </NPopconfirm>
+) : id => ''
 
 const columns: Ref<DataTableColumns<ApiManagement.Role>> = ref([
   {
@@ -79,15 +113,8 @@ const columns: Ref<DataTableColumns<ApiManagement.Role>> = ref([
     render: row => {
       return (
         <NSpace justify={'center'}>
-          <NButton size={'small'} onClick={() => handleEditTable(row.id)}>
-            编辑
-          </NButton>
-          <NPopconfirm onPositiveClick={() => handleDeleteTable(row.id)}>
-            {{
-              default: () => '确认删除',
-              trigger: () => <NButton size={'small'}>删除</NButton>
-            }}
-          </NPopconfirm>
+          {editButton(row)}
+          {delButton(row.id)}
         </NSpace>
       );
     }
@@ -106,11 +133,13 @@ function setEditData(data: ApiManagement.Role | null) {
   editData.value = data;
 }
 
-function handleEditTable(rowId: string) {
-  const findItem = tableData.value.find(item => item.id === rowId);
-  if (findItem) {
-    setEditData(findItem);
-  }
+function handleAddTable() {
+  openModal();
+  setModalType('add');
+}
+
+function handleEditTable(row: any) {
+  setEditData(row);
   setModalType('edit');
   openModal();
 }

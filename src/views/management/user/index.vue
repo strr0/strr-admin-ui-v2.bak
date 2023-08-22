@@ -30,12 +30,14 @@ import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import { statusLabels } from '@/constants';
 import { fetchUserList } from '@/service';
 import { useBoolean, useLoading } from '@/hooks';
+import { useButton } from '@/composables'
 import UserEdit from './components/edit.vue';
 import type { ModalType } from './components/edit.vue';
 // import ColumnSetting from './components/column-setting.vue';
 
 const { loading, startLoading, endLoading } = useLoading(false);
 const { bool: visible, setTrue: openModal } = useBoolean();
+const { hasButton } = useButton();
 
 const tableData = ref<ApiManagement.User[]>([]);
 function setTableData(data: ApiManagement.User[]) {
@@ -52,6 +54,20 @@ async function getTableData() {
     }, 1000);
   }
 }
+
+const editButton: (row: any) => any = hasButton('edit') ? row => (
+  <NButton size={'small'} onClick={() => handleEditTable(row)}>
+    编辑
+  </NButton>
+) : row => ''
+const delButton: (id: any) => any = hasButton('del') ? id => (
+  <NPopconfirm onPositiveClick={() => handleDeleteTable(id)}>
+    {{
+      default: () => '确认删除',
+      trigger: () => <NButton size={'small'}>删除</NButton>
+    }}
+  </NPopconfirm>
+) : id => ''
 
 const columns: Ref<DataTableColumns<ApiManagement.User>> = ref([
   {
@@ -108,15 +124,8 @@ const columns: Ref<DataTableColumns<ApiManagement.User>> = ref([
     render: row => {
       return (
         <NSpace justify={'center'}>
-          <NButton size={'small'} onClick={() => handleEditTable(row.id)}>
-            编辑
-          </NButton>
-          <NPopconfirm onPositiveClick={() => handleDeleteTable(row.id)}>
-            {{
-              default: () => '确认删除',
-              trigger: () => <NButton size={'small'}>删除</NButton>
-            }}
-          </NPopconfirm>
+          {editButton(row)}
+          {delButton(row.id)}
         </NSpace>
       );
     }
@@ -140,11 +149,8 @@ function handleAddTable() {
   setModalType('add');
 }
 
-function handleEditTable(rowId: string) {
-  const findItem = tableData.value.find(item => item.id === rowId);
-  if (findItem) {
-    setEditData(findItem);
-  }
+function handleEditTable(row: any) {
+  setEditData(row);
   setModalType('edit');
   openModal();
 }
