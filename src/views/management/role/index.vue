@@ -16,7 +16,7 @@
           <!-- <column-setting v-model:columns="columns" /> -->
         </n-space>
       </n-space>
-      <n-data-table :columns="columns" :data="tableData" :row-key="item => item.id" :loading="loading" :pagination="pagination" />
+      <n-data-table :columns="columns" :data="tableData" :row-key="item => item.id" :loading="loading" />
       <role-alloc v-model:visible="allocVisible" :role-id="rowData?.id" />
       <role-edit v-model:visible="editVisible" :type="modalType" :edit-data="rowData" />
     </n-card>
@@ -29,7 +29,7 @@ import type { Ref } from 'vue';
 import { NButton, NPopconfirm, NSpace, NTag } from 'naive-ui';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import { statusLabels } from '@/constants';
-import { fetchRoleList } from '@/service';
+import { fetchRoleList, removeRole } from '@/service';
 import { useBoolean, useLoading } from '@/hooks';
 import { useButton } from '@/composables'
 import RoleEdit from './components/edit.vue'
@@ -51,7 +51,7 @@ async function getTableData() {
   const { data } = await fetchRoleList({});
   if (data) {
     setTimeout(() => {
-      setTableData(data.content);
+      setTableData(data);
       endLoading();
     }, 1000);
   }
@@ -67,7 +67,7 @@ const editButton: (row: any) => any = hasButton('edit') ? row => (
     编辑
   </NButton>
 ) : row => ''
-const delButton: (id: any) => any = hasButton('del') ? id => (
+const delButton: (id: number) => any = hasButton('del') ? id => (
   <NPopconfirm onPositiveClick={() => handleDeleteTable(id)}>
     {{
       default: () => '确认删除',
@@ -158,23 +158,14 @@ function handleEditTable(row: any) {
   openEditModal();
 }
 
-function handleDeleteTable(rowId: string) {
-  window.$message?.info(`点击了删除，rowId为${rowId}`);
-}
-
-const pagination: PaginationProps = reactive({
-  page: 1,
-  pageSize: 10,
-  showSizePicker: true,
-  pageSizes: [10, 15, 20, 25, 30],
-  onChange: (page: number) => {
-    pagination.page = page;
-  },
-  onUpdatePageSize: (pageSize: number) => {
-    pagination.pageSize = pageSize;
-    pagination.page = 1;
+async function handleDeleteTable(id: number) {
+  const { error } = await removeRole(id)
+  if (error) {
+    window.$message?.error('删除失败');
+    return
   }
-});
+  window.$message?.success('删除成功');
+}
 
 function init() {
   getTableData();

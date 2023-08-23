@@ -29,7 +29,7 @@ import type { Ref } from 'vue';
 import { NButton, NPopconfirm, NSpace, NTag } from 'naive-ui';
 import type { DataTableColumns, PaginationProps, TreeSelectOption } from 'naive-ui';
 import { resourceTypeLables } from '@/constants';
-import { fetchResourceList } from '@/service';
+import { fetchResourceList, removeResource } from '@/service';
 import { useBoolean, useLoading } from '@/hooks';
 import { useButton } from '@/composables'
 import ResourceEdit from './components/edit.vue'
@@ -79,7 +79,7 @@ const editButton: (row: any) => any = hasButton('edit') ? row => (
     编辑
   </NButton>
 ) : row => ''
-const delButton: (id: any) => any = hasButton('del') ? id => (
+const delButton: (id: number) => any = hasButton('del') ? id => (
   <NPopconfirm onPositiveClick={() => handleDeleteTable(id)}>
     {{
       default: () => '确认删除',
@@ -178,8 +178,13 @@ function handleEditTable(row: any) {
   openEditModal();
 }
 
-function handleDeleteTable(rowId: string) {
-  window.$message?.info(`点击了删除，rowId为${rowId}`);
+async function handleDeleteTable(id: number) {
+  const { error } = await removeResource(id)
+  if (error) {
+    window.$message?.error('删除失败');
+    return
+  }
+  window.$message?.success('删除成功');
 }
 
 function init() {

@@ -13,6 +13,9 @@
       <n-descriptions-item label="头像">
         {{formModel.avatar}}
       </n-descriptions-item>
+      <n-descriptions-item label="角色">
+        <span v-for="(roleId, index) in roleIds" :key="index">{{roleLabels[roleId]}}</span>
+      </n-descriptions-item>
       <n-descriptions-item label="说明">
         {{formModel.remark}}
       </n-descriptions-item>
@@ -23,12 +26,14 @@
 <script setup lang="ts">
 import { ref, computed, reactive, watch } from 'vue';
 import type { FormInst, FormItemRule } from 'naive-ui';
+import { fetchRoleIds } from '@/service'
 
 export interface Props {
   /** 弹窗可见性 */
   visible: boolean;
   /** 编辑的表格行数据 */
   showData?: ApiManagement.User | null;
+  roleLabels?: Record<number, string> | null;
 }
 
 defineOptions({ name: 'UserShow' });
@@ -72,6 +77,16 @@ function createDefaultFormModel(): FormModel {
   };
 }
 
+const roleIds = ref<number[] | null>([])
+function setRoleIds(data: number[] | null) {
+  roleIds.value = data;
+}
+
+async function getRoleIds(userId: number) {
+  const { data } = await fetchRoleIds(userId)
+  setRoleIds(data)
+}
+
 function handleUpdateFormModel(model: Partial<FormModel>) {
   Object.assign(formModel, model);
 }
@@ -81,6 +96,9 @@ watch(
   newValue => {
     if (newValue && props.showData) {
       handleUpdateFormModel(props.showData);
+      getRoleIds(props.showData.id)
+    } else {
+      setRoleIds(null)
     }
   }
 );

@@ -1,6 +1,6 @@
 <template>
   <n-modal v-model:show="modalVisible" preset="card" :title="title" class="w-700px">
-    <n-tree block-line :data="treeData" :default-checked-keys="checkValue" checkable expand-on-click />
+    <n-tree block-line :data="treeData" checkable :checked-keys="checkedKeys" :on-update:checked-keys="setCheckedKeys" expand-on-click />
     <n-space class="w-full pt-16px" :size="24" justify="end">
       <n-button class="w-72px" @click="closeModal">取消</n-button>
       <n-button class="w-72px" type="primary" @click="handleSubmit">确定</n-button>
@@ -12,7 +12,7 @@
 import { ref, computed, reactive, watch } from 'vue';
 import type { FormInst, FormItemRule, TreeOption } from 'naive-ui';
 import { useLoading } from '@/hooks';
-import { fetchResourceList, fetchResourceIds } from '@/service'
+import { fetchResourceList, fetchResourceIds, updateRoleRel } from '@/service'
 
 const { startLoading, endLoading } = useLoading(false);
 
@@ -55,9 +55,9 @@ async function getTreeData() {
   }
 }
 
-const checkValue = ref<number[] | null>([])
-function setCheckValue(data: number[] | null) {
-  checkValue.value = data;
+const checkedKeys = ref<number[] | null>([])
+function setCheckedKeys(data: number[] | null) {
+  checkedKeys.value = data;
 }
 
 interface Emits {
@@ -81,25 +81,30 @@ const closeModal = () => {
 const title = '资源分配'
 
 async function handleSubmit() {
-  // await formRef.value?.validate();
-  window.$message?.success('新增成功!');
+  const { error } = await updateRoleRel({
+    roleId: props.roleId,
+    resourceIds: checkedKeys.value
+  })
+  if (error) {
+    window.$message?.error('更新失败');
+    return
+  }
+  window.$message?.success('更新成功!');
   closeModal();
 }
 
-async function getCheckValue() {
-  if (props.roleId) {
-    const { data } = await fetchResourceIds(props.roleId)
-    setCheckValue(data)
-  } else {
-    setCheckValue(null)
-  }
+async function getCheckedKeys(roleId: number) {
+  const { data } = await fetchResourceIds(roleId)
+  setCheckedKeys(data)
 }
 
 watch(
   () => props.visible,
   newValue => {
-    if (newValue) {
-      getCheckValue()
+    if (newValue && props.roleId) {
+      getCheckedKeys(props.roleId)
+    } else {
+      setCheckedKeys(null)
     }
   }
 );

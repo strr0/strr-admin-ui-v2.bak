@@ -16,8 +16,8 @@
         </n-space>
       </n-space>
       <n-data-table :columns="columns" :data="tableData" :row-key="item => item.id" :loading="loading" :pagination="pagination" />
-      <user-show v-model:visible="showVisible" :show-data="rowData" />
-      <user-edit v-model:visible="editVisible" :type="modalType" :edit-data="rowData" />
+      <user-show v-model:visible="showVisible" :show-data="rowData" :role-labels="roleLabels" />
+      <user-edit v-model:visible="editVisible" :type="modalType" :edit-data="rowData" :role-options="roleOptions" />
     </n-card>
   </div>
 </template>
@@ -26,9 +26,9 @@
 import { h, reactive, ref } from 'vue';
 import type { Ref } from 'vue';
 import { NButton, NPopconfirm, NSpace, NTag } from 'naive-ui';
-import type { DataTableColumns, PaginationProps } from 'naive-ui';
+import type { DataTableColumns, PaginationProps, SelectOption } from 'naive-ui';
 import { statusLabels } from '@/constants';
-import { fetchUserList } from '@/service';
+import { fetchUserList, fetchRoleList, removeUser } from '@/service';
 import { useBoolean, useLoading } from '@/hooks';
 import { useButton } from '@/composables'
 import UserEdit from './components/edit.vue';
@@ -47,11 +47,39 @@ function setTableData(data: ApiManagement.User[]) {
 
 async function getTableData() {
   startLoading();
-  const { data } = await fetchUserList({});
+  const { data } = await fetchUserList({
+    page: pagination.page,
+    size: pagination.pageSize
+  });
   if (data) {
     setTimeout(() => {
       setTableData(data.content);
       endLoading();
+    }, 1000);
+  }
+}
+
+const roleLabels = ref<Record<number, string>>({});
+const roleOptions = ref<SelectOption[]>([]);
+function setRoleOptions(data: ApiManagement.Role[]) {
+  let lables: Record<number, string> = {}
+  data.forEach(item => {
+    lables[item.id] = item.title
+  })
+  roleLabels.value = lables;
+  roleOptions.value = data.map(item => {
+    return {
+      value: item.id,
+      label: item.title
+    } as SelectOption
+  })
+}
+
+async function getRoleOptions() {
+  const { data } = await fetchRoleList({});
+  if (data) {
+    setTimeout(() => {
+      setRoleOptions(data);
     }, 1000);
   }
 }
@@ -66,7 +94,7 @@ const editButton: (row: any) => any = hasButton('edit') ? row => (
     编辑
   </NButton>
 ) : row => ''
-const delButton: (id: any) => any = hasButton('del') ? id => (
+const delButton: (id: number) => any = hasButton('del') ? id => (
   <NPopconfirm onPositiveClick={() => handleDeleteTable(id)}>
     {{
       default: () => '确认删除',
@@ -167,8 +195,13 @@ function handleEditTable(row: any) {
   openEditModal();
 }
 
-function handleDeleteTable(rowId: string) {
-  window.$message?.info(`点击了删除，rowId为${rowId}`);
+async function handleDeleteTable(id: number) {
+  const { error } = await removeUser(id)
+  if (error) {
+    window.$message?.error('删除失败');
+    return
+  }
+  window.$message?.success('删除成功');
 }
 
 const pagination: PaginationProps = reactive({
@@ -187,6 +220,7 @@ const pagination: PaginationProps = reactive({
 
 function init() {
   getTableData();
+  getRoleOptions();
 }
 
 // 初始化

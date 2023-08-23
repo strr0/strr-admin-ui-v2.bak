@@ -21,6 +21,7 @@
 import { ref, computed, reactive, watch } from 'vue';
 import type { FormInst, FormItemRule } from 'naive-ui';
 import { formRules, createRequiredFormRule } from '@/utils';
+import { saveRole, updateRole } from '@/service'
 
 export interface Props {
   /** 弹窗可见性 */
@@ -72,7 +73,7 @@ const title = computed(() => {
 
 const formRef = ref<HTMLElement & FormInst>();
 
-type FormModel = Pick<ApiManagement.Role, 'name' | 'title' | 'status'>;
+type FormModel = Pick<ApiManagement.Role, 'id' | 'name' | 'title'>;
 
 const formModel = reactive<FormModel>(createDefaultFormModel());
 
@@ -83,9 +84,9 @@ const rules: Record<keyof FormModel, FormItemRule | FormItemRule[]> = {
 
 function createDefaultFormModel(): FormModel {
   return {
+    id: null,
     name: '',
-    title: '',
-    status: '0'
+    title: ''
   };
 }
 
@@ -111,7 +112,24 @@ function handleUpdateFormModelByModalType() {
 
 async function handleSubmit() {
   await formRef.value?.validate();
-  window.$message?.success('新增成功!');
+  let formData = {...formModel}
+  delete formData.createTime
+  delete formData.updateTime
+  if (formModel.id) {
+    const { error } = await updateRole(formData);
+    if (error) {
+      window.$message?.error('更新失败');
+      return
+    }
+    window.$message?.success('更新成功');
+  } else {
+    const { error } = await saveRole(formData);
+    if (error) {
+      window.$message?.error('新增失败');
+      return
+    }
+    window.$message?.success('新增成功');
+  }
   closeModal();
 }
 
