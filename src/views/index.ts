@@ -11,6 +11,7 @@ export const views: Record<
   login: () => import('./_builtin/login/index.vue'),
   'not-found': () => import('./_builtin/not-found/index.vue'),
   management_properties: () => import('./management/properties/index.vue'),
+  management_properties_show: () => import('./management/properties/show/index.vue'),
   management_resource: () => import('./management/resource/index.vue'),
   management_role: () => import('./management/role/index.vue'),
   management_user: () => import('./management/user/index.vue'),

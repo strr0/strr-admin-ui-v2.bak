@@ -15,7 +15,7 @@
           </n-button>
         </n-space>
       </n-space>
-      <n-data-table :columns="columns" :data="tableData" :row-key="item => item.application" :loading="loading" />
+      <n-data-table :columns="columns" :data="tableData" :row-key="item => item.id" :loading="loading" />
     </n-card>
   </div>
 </template>
@@ -25,16 +25,26 @@ import { h, reactive, ref } from 'vue';
 import type { Ref } from 'vue';
 import { NButton, NPopconfirm, NSpace, NTag } from 'naive-ui';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
-import { fetchApplicationList } from '@/service';
+import { router } from '@/router';
+import { fetchPropertiesList } from '@/service';
 import { useBoolean, useLoading } from '@/hooks';
-import { routeName } from '@/router';
-import { useButton, useRouterPush } from '@/composables'
+import { useButton } from '@/composables'
+import { ShowOrEdit } from '@/components/custom/show-or-edit'
 
 const { loading, startLoading, endLoading } = useLoading(false);
 const { bool: editVisible, setTrue: openEditModal } = useBoolean();
 const { bool: showVisible, setTrue: openShowModal } = useBoolean();
 const { hasButton } = useButton();
-const { routerPush } = useRouterPush();
+
+function initQueryParam() {
+  const route = router.currentRoute.value;
+  setApplication(route.query?.application)
+}
+
+const application = ref<string | (string|null)[] | null>(null)
+function setApplication(data: string | (string|null)[] | null) {
+  application.value = data
+}
 
 const tableData = ref<ApiManagement.Properties[]>([]);
 function setTableData(data: ApiManagement.Properties[]) {
@@ -43,7 +53,9 @@ function setTableData(data: ApiManagement.Properties[]) {
 
 async function getTableData() {
   startLoading();
-  const { data } = await fetchApplicationList({});
+  const { data } = await fetchPropertiesList({
+    application: application.value
+  });
   if (data) {
     setTimeout(() => {
       setTableData(data);
@@ -51,25 +63,6 @@ async function getTableData() {
     }, 1000);
   }
 }
-
-const showButton: (row: any) => any = hasButton('show') ? row => (
-  <NButton size={'small'} onClick={() => handleShowTable(row)}>
-    查看
-  </NButton>
-) : row => ''
-const editButton: (row: any) => any = hasButton('edit') ? row => (
-  <NButton size={'small'} onClick={() => handleEditTable(row)}>
-    编辑
-  </NButton>
-) : row => ''
-const delButton: (id: number) => any = hasButton('del') ? id => (
-  <NPopconfirm onPositiveClick={() => handleDeleteTable(id)}>
-    {{
-      default: () => '确认删除',
-      trigger: () => <NButton size={'small'}>删除</NButton>
-    }}
-  </NPopconfirm>
-) : id => ''
 
 const columns: Ref<DataTableColumns<ApiManagement.Properties>> = ref([
   {
@@ -95,15 +88,60 @@ const columns: Ref<DataTableColumns<ApiManagement.Properties>> = ref([
     align: 'center'
   },
   {
+    key: 'key',
+    title: '键',
+    align: 'center',
+    render: (row, index) => {
+      return h(ShowOrEdit, {
+        value: row.key,
+        onUpdateValue (v: string) {
+          tableData.value[index].key = v
+        }
+      })
+    }
+  },
+  {
+    key: 'name',
+    title: '名称',
+    align: 'center',
+    render: (row, index) => {
+      return h(ShowOrEdit, {
+        value: row.name,
+        onUpdateValue (v: string) {
+          tableData.value[index].name = v
+        }
+      })
+    }
+  },
+  {
+    key: 'value',
+    title: '值',
+    align: 'center',
+    render: (row, index) => {
+      return h(ShowOrEdit, {
+        value: row.value,
+        onUpdateValue (v: string) {
+          tableData.value[index].value = v
+        }
+      })
+    }
+  },
+  {
     key: 'actions',
     title: '操作',
     align: 'center',
     render: row => {
       return (
         <NSpace justify={'center'}>
-          {showButton(row)}
-          {editButton(row)}
-          {delButton(row.id)}
+          <NButton size={'small'} onClick={() => handleShowTable(row)}>
+            保存
+          </NButton>
+          <NPopconfirm onPositiveClick={() => handleDeleteTable(row.id)}>
+            {{
+              default: () => '确认删除',
+              trigger: () => <NButton size={'small'}>删除</NButton>
+            }}
+          </NPopconfirm>
         </NSpace>
       );
     }
@@ -117,12 +155,8 @@ function setRowData(data: ApiManagement.Properties | null) {
 }
 
 function handleShowTable(row: any) {
-  routerPush({
-    name: routeName('management_properties_show'),
-    query: {
-      application: row.application
-    }
-  })
+  setRowData(row);
+  openShowModal();
 }
 
 function handleAddTable() {
@@ -144,6 +178,7 @@ async function handleDeleteTable(id: number) {
 }
 
 function init() {
+  initQueryParam();
   getTableData();
 }
 

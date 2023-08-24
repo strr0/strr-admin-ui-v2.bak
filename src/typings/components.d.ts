@@ -118,6 +118,7 @@ declare module 'vue' {
     NTreeSelect: typeof import('naive-ui')['NTreeSelect']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    ShowOrEdit: typeof import('./../components/custom/show-or-edit/index.vue')['default']
     SvgIcon: typeof import('./../components/custom/svg-icon.vue')['default']
     SystemLogo: typeof import('./../components/common/system-logo.vue')['default']
     WebSiteLink: typeof import('./../components/custom/web-site-link.vue')['default']
