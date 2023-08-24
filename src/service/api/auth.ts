@@ -1,4 +1,4 @@
-import { request, authRequest } from '../request';
+import { request, rawRequest } from '../request';
 import qs from 'qs'
 
 /**
@@ -24,7 +24,7 @@ export function fetchLogin(username: string, password: string) {
  * @param resp 
  */
 export async function fetchToken() {
-  let { data } = await authRequest.get<string>('/authservice/oauth2/authorize', {
+  let { data } = await rawRequest.get<string>('/authservice/oauth2/authorize', {
     params: {
       response_type: 'code',
       client_id: 'WEB_CLIENT',
@@ -34,7 +34,7 @@ export async function fetchToken() {
   if (data) {
     let match = /\?code=(.*)/.exec(data)
     if (match) {
-      return authRequest.post<ApiAuth.Token>('/authservice/oauth2/token', qs.stringify({
+      return rawRequest.post<ApiAuth.Token>('/authservice/oauth2/token', qs.stringify({
         grant_type: 'authorization_code',
         scope: 'web',
         client_id: 'WEB_CLIENT',
@@ -65,7 +65,7 @@ export function fetchUserRoutes() {
  * @param refreshToken
  */
 export function fetchUpdateToken(refreshToken: string) {
-  return request.post<ApiAuth.Token>('/authservice/oauth2/token', qs.stringify({
+  return rawRequest.post<ApiAuth.Token>('/authservice/oauth2/token', qs.stringify({
     grant_type: 'refresh_token',
     client_id: 'WEB_CLIENT',
     client_secret: 'WEB_SECRET',

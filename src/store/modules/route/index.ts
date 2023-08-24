@@ -115,7 +115,8 @@ export const useRouteStore = defineStore('route-store', {
       if (!error) {
         this.routeHomeName = data.home;
         this.handleUpdateRootRedirect(data.home);
-        this.handleAuthRoute(sortRoutes(data.routes));
+        // this.handleAuthRoute(sortRoutes(data.routes));
+        this.handleAuthRoute(data.routes);
 
         initHomeTab(data.home, router);
 

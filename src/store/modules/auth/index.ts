@@ -109,6 +109,7 @@ export const useAuthStore = defineStore('auth-store', {
       if (data) {
         // 成功后把用户信息存储到缓存中
         localStg.set('userInfo', data);
+        this.userInfo = data
         await this.handleActionAfterLogin();
       }
       this.loginLoading = false;

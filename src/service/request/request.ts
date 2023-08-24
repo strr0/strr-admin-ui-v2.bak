@@ -2,7 +2,7 @@ import { ref } from 'vue';
 import type { Ref } from 'vue';
 import type { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { useBoolean, useLoading } from '@/hooks';
-import { CustomAxiosInstance, AuthAxiosInstance, PageAxiosInstance } from './instance';
+import { CustomAxiosInstance, RawAxiosInstance, PageAxiosInstance } from './instance';
 import axios from 'axios';
 
 type RequestMethod = 'get' | 'post' | 'put' | 'delete';
@@ -194,8 +194,8 @@ export function createHookRequest(axiosConfig: AxiosRequestConfig, backendConfig
  * 创建授权请求
  * @param axiosConfig 
  */
-export function createAuthRequest(axiosConfig: AxiosRequestConfig) {
-  const authInstance = new AuthAxiosInstance(axiosConfig);
+export function createRawRequest(axiosConfig: AxiosRequestConfig) {
+  const authInstance = new RawAxiosInstance(axiosConfig);
 
   /**
    * get请求
@@ -238,7 +238,7 @@ export function createPageRequest(axiosConfig: AxiosRequestConfig) {
    */
   async function get<T>(url: string, config?: AxiosRequestConfig) {
     const { instance } = pageInstance;
-    return (await instance.get(url, config)) as Service.RequestResult<T>;
+    return (await instance.get(url, config)) as Service.RequestResult<ApiPageResult.Page<T>>;
   }
 
   return {

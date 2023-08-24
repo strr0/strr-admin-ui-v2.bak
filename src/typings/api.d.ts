@@ -60,4 +60,24 @@ declare namespace ApiManagement {
     status: string;
     children?: Resource[]
   }
+  interface Properties {
+    id?: number;
+    application: string;
+    profile: string;
+    label?: string;
+    key?: string;
+    name?: string;
+    value?: string;
+  }
+}
+
+declare namespace ApiServer {
+  interface Server {
+    predicate: string;
+    metadata: string;
+    route_id: string;
+    filters: any;
+    uri: string;
+    order: number;
+  }
 }

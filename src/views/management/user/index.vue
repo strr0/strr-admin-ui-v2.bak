@@ -15,7 +15,7 @@
           </n-button>
         </n-space>
       </n-space>
-      <n-data-table :columns="columns" :data="tableData" :row-key="item => item.id" :loading="loading" :pagination="pagination" />
+      <n-data-table remote :columns="columns" :data="tableData" :row-key="item => item.id" :loading="loading" :pagination="pagination" />
       <user-show v-model:visible="showVisible" :show-data="rowData" :role-labels="roleLabels" />
       <user-edit v-model:visible="editVisible" :type="modalType" :edit-data="rowData" :role-options="roleOptions" />
     </n-card>
@@ -54,6 +54,7 @@ async function getTableData() {
   if (data) {
     setTimeout(() => {
       setTableData(data.content);
+      pagination.itemCount = data.total
       endLoading();
     }, 1000);
   }
@@ -211,10 +212,12 @@ const pagination: PaginationProps = reactive({
   pageSizes: [10, 15, 20, 25, 30],
   onChange: (page: number) => {
     pagination.page = page;
+    getTableData();
   },
   onUpdatePageSize: (pageSize: number) => {
     pagination.pageSize = pageSize;
     pagination.page = 1;
+    getTableData();
   }
 });
 

@@ -93,7 +93,7 @@ export class CustomAxiosInstance {
   }
 }
 
-export class AuthAxiosInstance {
+export class RawAxiosInstance {
   instance: AxiosInstance;
 
   constructor(

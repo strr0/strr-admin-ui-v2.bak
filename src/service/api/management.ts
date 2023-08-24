@@ -3,7 +3,7 @@ import qs from 'qs'
 
 /** 获取用户列表 */
 export function fetchUserList(params: any) {
-  return pageRequest.get<ApiPageResult.Page<ApiManagement.User>>('/adminservice/admin/sysUser/page', { params });
+  return pageRequest.get<ApiManagement.User>('/adminservice/admin/sysUser/page', { params });
 };
 
 /** 保存用户 */
@@ -38,7 +38,7 @@ export function updateRole(role: any) {
 
 /** 更新角色权限 */
 export function updateRoleRel(params: any) {
-  return request.post<any>('/adminservice/admin/sysRole/updateRel', qs.stringify(params));
+  return request.post<any>('/adminservice/admin/sysRole/updateRel', qs.stringify(params, { arrayFormat: 'repeat' }));
 }
 
 /** 获取资源id */
@@ -69,4 +69,39 @@ export function updateResource(resource: any) {
 /** 删除资源 */
 export function removeResource(id: number) {
   return request.delete<any>('/adminservice/admin/sysResource/remove?id=' + id);
+}
+
+/** 获取应用列表 */
+export function fetchApplicationList(params: any) {
+  return request.get<ApiManagement.Properties[]>('/adminservice/admin/sysProperties/listApplication', { params });
+}
+
+/** 获取配置列表 */
+export function fetchPropertiesList(params: any) {
+  return request.get<ApiManagement.Properties[]>('/adminservice/admin/sysProperties/listProperties', { params });
+}
+
+/** 保存配置 */
+export function saveProperties(properties: ApiManagement.Properties) {
+  return request.post<any>('/adminservice/admin/sysProperties/save', qs.stringify(properties));
+}
+
+/** 批量保存配置 */
+export function batchSaveProperties(list: ApiManagement.Properties[]) {
+  return request.post<any>('/adminservice/admin/sysProperties/batchSave', list);
+}
+
+/** 更新配置 */
+export function updateProperties(properties: ApiManagement.Properties) {
+  return request.put<any>('/adminservice/admin/sysProperties/update', qs.stringify(properties));
+}
+
+/** 删除配置 */
+export function removeProperties(id: number) {
+  return request.delete<any>('/adminservice/admin/sysProperties/remove?id=' + id);
+}
+
+/** 批量删除配置 */
+export function batchRemoveProperties(application: string) {
+  return request.delete<any>('/adminservice/admin/sysProperties/batchRemove?application=' + application);
 }
