@@ -2,8 +2,7 @@ import { ref } from 'vue';
 import type { Ref } from 'vue';
 import type { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { useBoolean, useLoading } from '@/hooks';
-import { CustomAxiosInstance, RawAxiosInstance, PageAxiosInstance } from './instance';
-import axios from 'axios';
+import { CustomAxiosInstance, MyAxiosInstance } from './instance';
 
 type RequestMethod = 'get' | 'post' | 'put' | 'delete';
 
@@ -190,62 +189,6 @@ export function createHookRequest(axiosConfig: AxiosRequestConfig, backendConfig
   };
 }
 
-/**
- * 创建授权请求
- * @param axiosConfig 
- */
-export function createRawRequest(axiosConfig: AxiosRequestConfig) {
-  const authInstance = new RawAxiosInstance(axiosConfig);
-
-  /**
-   * get请求
-   * @param url - 请求地址
-   * @param config - axios配置
-   */
-  async function get<T>(url: string, config?: AxiosRequestConfig) {
-    const { instance } = authInstance;
-    return (await instance.get(url, config)) as Service.RequestResult<T>;
-  }
-
-  /**
-   * post请求
-   * @param url - 请求地址
-   * @param data - 请求的body的data
-   * @param config - axios配置
-   */
-  async function post<T>(url: string, data?: any, config?: AxiosRequestConfig) {
-    const { instance } = authInstance;
-    return (await instance.post(url, data, config)) as Service.RequestResult<T>;
-  }
-
-  return {
-    get,
-    post
-  };
-}
-
-/**
- * 创建授权请求
- * @param axiosConfig 
- */
-export function createPageRequest(axiosConfig: AxiosRequestConfig) {
-  const pageInstance = new PageAxiosInstance(axiosConfig);
-
-  /**
-   * get请求
-   * @param url - 请求地址
-   * @param config - axios配置
-   */
-  async function get<T>(url: string, config?: AxiosRequestConfig) {
-    const { instance } = pageInstance;
-    return (await instance.get(url, config)) as Service.RequestResult<ApiPageResult.Page<T>>;
-  }
-
-  return {
-    get
-  };
-}
-
 async function getRequestResponse(params: {
   instance: AxiosInstance;
   method: RequestMethod;
@@ -262,4 +205,95 @@ async function getRequestResponse(params: {
     res = await instance[method](url, data, config);
   }
   return res;
+}
+
+/**
+ * 创建请求
+ * @param axiosConfig - axios配置
+ * @param backendConfig - 后端接口字段配置
+ */
+export function createMyRequest(axiosConfig: AxiosRequestConfig) {
+  const myInstance = new MyAxiosInstance(axiosConfig);
+
+  /**
+   * get请求
+   * @param url - 请求地址
+   * @param config - axios配置
+   */
+  async function get<T>(url: string, config?: AxiosRequestConfig) {
+    const { instance } = myInstance;
+    return (await instance.get(url, config)) as Service.Result<T>;
+  }
+
+  /**
+   * post请求
+   * @param url - 请求地址
+   * @param data - 请求的body的data
+   * @param config - axios配置
+   */
+  async function post<T>(url: string, data?: any, config?: AxiosRequestConfig) {
+    const { instance } = myInstance;
+    return (await instance.post(url, data, config)) as Service.Result<T>;
+  }
+  /**
+   * put请求
+   * @param url - 请求地址
+   * @param data - 请求的body的data
+   * @param config - axios配置
+   */
+  async function put<T>(url: string, data?: any, config?: AxiosRequestConfig) {
+    const { instance } = myInstance;
+    return (await instance.put(url, data, config)) as Service.Result<T>;
+  }
+
+  /**
+   * delete请求
+   * @param url - 请求地址
+   * @param config - axios配置
+   */
+  async function handleDelete<T>(url: string, config?: AxiosRequestConfig) {
+    const { instance } = myInstance;
+    return (await instance.delete(url, config)) as Service.Result<T>;
+  }
+
+  /**
+   * get请求
+   * @param url - 请求地址
+   * @param config - axios配置
+   */
+  async function getRaw<T>(url: string, config?: AxiosRequestConfig) {
+    const { instance } = myInstance;
+    return (await instance.get(url, config)) as T;
+  }
+
+  /**
+   * post请求
+   * @param url - 请求地址
+   * @param data - 请求的body的data
+   * @param config - axios配置
+   */
+  async function postRaw<T>(url: string, data?: any, config?: AxiosRequestConfig) {
+    const { instance } = myInstance;
+    return (await instance.post(url, data, config)) as T;
+  }
+
+  /**
+   * get请求
+   * @param url - 请求地址
+   * @param config - axios配置
+   */
+  async function page<T>(url: string, config?: AxiosRequestConfig) {
+    const { instance } = myInstance;
+    return (await instance.get(url, config)) as Service.Page<T>;
+  }
+
+  return {
+    get,
+    post,
+    put,
+    delete: handleDelete,
+    getRaw,
+    postRaw,
+    page
+  };
 }

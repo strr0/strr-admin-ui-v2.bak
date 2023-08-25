@@ -18,14 +18,14 @@ export const userRoleOptions: Common.OptionWithKey<Auth.RoleType>[] = [
   { value: 'user', label: userRoleLabels.user }
 ];
 
-export const statusLabels: Record<string, string> = {
-  '1': '启用',
-  '0': '禁用'
+export const statusLabels: Record<number, string> = {
+  1: '启用',
+  0: '禁用'
 }
 
-export const statusOptions: Common.OptionWithKey<string>[] = [
-  { value: '1', label: statusLabels['1'] },
-  { value: '0', label: statusLabels['0'] }
+export const statusOptions: Common.OptionWithKey<number>[] = [
+  { value: 1, label: statusLabels[1] },
+  { value: 0, label: statusLabels[0] }
 ]
 
 export const resourceTypeLables: Record<string, string> = {

@@ -22,15 +22,6 @@ declare namespace ApiRoute {
   }
 }
 
-declare namespace ApiPageResult {
-  interface Page<T> {
-    content: T[];
-    page: number;
-    size: number;
-    total: number;
-  }
-}
-
 declare namespace ApiManagement {
   interface User {
     id: number;
@@ -39,13 +30,13 @@ declare namespace ApiManagement {
     email: string;
     avatar: string;
     remark: string;
-    status: string;
+    status: number;
   }
   interface Role {
     id: number;
     name: string;
     title: string;
-    status: string;
+    status: number;
   }
   interface Resource {
     id: number;
@@ -57,7 +48,7 @@ declare namespace ApiManagement {
     icon: string;
     parentId: number;
     order: number;
-    status: string;
+    status: number;
     children?: Resource[]
   }
   interface Properties {

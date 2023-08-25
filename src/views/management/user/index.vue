@@ -17,7 +17,7 @@
       </n-space>
       <n-data-table remote :columns="columns" :data="tableData" :row-key="item => item.id" :loading="loading" :pagination="pagination" />
       <user-show v-model:visible="showVisible" :show-data="rowData" :role-labels="roleLabels" />
-      <user-edit v-model:visible="editVisible" :type="modalType" :edit-data="rowData" :role-options="roleOptions" />
+      <user-edit v-model:visible="editVisible" :type="modalType" :edit-data="rowData" :role-options="roleOptions" :refresh="getTableData" />
     </n-card>
   </div>
 </template>
@@ -47,7 +47,7 @@ function setTableData(data: ApiManagement.User[]) {
 
 async function getTableData() {
   startLoading();
-  const { data } = await fetchUserList({
+  const data = await fetchUserList({
     page: pagination.page,
     size: pagination.pageSize
   });
@@ -197,11 +197,12 @@ function handleEditTable(row: any) {
 }
 
 async function handleDeleteTable(id: number) {
-  const { error } = await removeUser(id)
-  if (error) {
+  const { success } = await removeUser(id)
+  if (!success) {
     window.$message?.error('删除失败');
     return
   }
+  getTableData();
   window.$message?.success('删除成功');
 }
 

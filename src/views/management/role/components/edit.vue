@@ -34,6 +34,7 @@ export interface Props {
   type?: 'add' | 'edit';
   /** 编辑的表格行数据 */
   editData?: ApiManagement.Role | null;
+  refresh: any;
 }
 
 export type ModalType = NonNullable<Props['type']>;
@@ -113,23 +114,22 @@ function handleUpdateFormModelByModalType() {
 async function handleSubmit() {
   await formRef.value?.validate();
   let formData = {...formModel}
-  delete formData.createTime
-  delete formData.updateTime
   if (formModel.id) {
-    const { error } = await updateRole(formData);
-    if (error) {
+    const { success } = await updateRole(formData);
+    if (!success) {
       window.$message?.error('更新失败');
       return
     }
     window.$message?.success('更新成功');
   } else {
-    const { error } = await saveRole(formData);
-    if (error) {
+    const { success } = await saveRole(formData);
+    if (!success) {
       window.$message?.error('新增失败');
       return
     }
     window.$message?.success('新增成功');
   }
+  props.refresh();
   closeModal();
 }
 

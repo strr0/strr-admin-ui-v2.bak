@@ -18,7 +18,7 @@
       </n-space>
       <n-data-table :columns="columns" :data="tableData" :row-key="item => item.id" :loading="loading" />
       <role-alloc v-model:visible="allocVisible" :role-id="rowData?.id" />
-      <role-edit v-model:visible="editVisible" :type="modalType" :edit-data="rowData" />
+      <role-edit v-model:visible="editVisible" :type="modalType" :edit-data="rowData" :refresh="getTableData" />
     </n-card>
   </div>
 </template>
@@ -159,11 +159,12 @@ function handleEditTable(row: any) {
 }
 
 async function handleDeleteTable(id: number) {
-  const { error } = await removeRole(id)
-  if (error) {
+  const { success } = await removeRole(id)
+  if (!success) {
     window.$message?.error('删除失败');
     return
   }
+  getTableData()
   window.$message?.success('删除成功');
 }
 

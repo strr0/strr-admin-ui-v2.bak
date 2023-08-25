@@ -59,9 +59,9 @@ export const useAuthStore = defineStore('auth-store', {
 
       let loginSuccess = false
 
-      const { data } = await fetchToken()
-      if (data) {
-        loginSuccess = this.loginByToken(data)
+      const apiToken = await fetchToken()
+      if (apiToken) {
+        loginSuccess = this.loginByToken(apiToken)
       }
 
       if (loginSuccess) {
@@ -105,8 +105,8 @@ export const useAuthStore = defineStore('auth-store', {
      */
     async login(username: string, password: string) {
       this.loginLoading = true;
-      const { data } = await fetchLogin(username, password);
-      if (data) {
+      const { success, data } = await fetchLogin(username, password);
+      if (success) {
         // 成功后把用户信息存储到缓存中
         localStg.set('userInfo', data);
         this.userInfo = data
@@ -137,12 +137,12 @@ export const useAuthStore = defineStore('auth-store', {
       };
       const { username, password } = accounts[userRole];
       const fetch = await fetchLogin(username, password);
-      if (!fetch || !fetch.data) {
+      if (!fetch || !fetch.success) {
         return
       }
-      const { data } = await fetchToken()
-      if (data) {
-        await this.loginByToken(data);
+      const apiToken = await fetchToken()
+      if (apiToken) {
+        await this.loginByToken(apiToken);
         resetRouteStore();
         initAuthRoute();
       }

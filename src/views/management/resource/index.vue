@@ -16,9 +16,9 @@
           <!-- <column-setting v-model:columns="columns" /> -->
         </n-space>
       </n-space>
-      <n-data-table :columns="columns" :data="tableData" :row-key="item => item.id" :loading="loading" />
+      <n-data-table :columns="columns" :data="tableData" :row-key="item => item.id" :default-expanded-row-keys="expandedKeys" :loading="loading" />
       <resource-show v-model:visible="showVisible" :show-data="rowData" />
-      <resource-edit v-model:visible="editVisible" :type="modalType" :edit-data="rowData" :resource-options="resourceOptions" />
+      <resource-edit v-model:visible="editVisible" :type="modalType" :edit-data="rowData" :resource-options="resourceOptions" :refresh="getTableData" />
     </n-card>
   </div>
 </template>
@@ -42,10 +42,12 @@ const { bool: showVisible, setTrue: openShowModal } = useBoolean();
 const { hasButton } = useButton();
 
 const tableData = ref<ApiManagement.Resource[]>([]);
-const resourceOptions = ref<TreeSelectOption[]>([])
+const resourceOptions = ref<TreeSelectOption[]>([]);
+const expandedKeys = ref<number[]>([]);
 function setTableData(data: ApiManagement.Resource[]) {
   tableData.value = data;
-  resourceOptions.value = formatTreeOptions(data)
+  resourceOptions.value = formatTreeOptions(data);
+  expandedKeys.value = data.map(item => item.id);
 }
 
 function formatTreeOptions(data: ApiManagement.Resource[]): TreeSelectOption[] {
@@ -179,11 +181,12 @@ function handleEditTable(row: any) {
 }
 
 async function handleDeleteTable(id: number) {
-  const { error } = await removeResource(id)
-  if (error) {
+  const { success } = await removeResource(id)
+  if (!success) {
     window.$message?.error('删除失败');
     return
   }
+  getTableData()
   window.$message?.success('删除成功');
 }
 

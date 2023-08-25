@@ -80,6 +80,21 @@ declare namespace Service {
     query: Record<string, any>;
     headers: Record<string, any>;
   }
+
+  /** 后端result */
+  interface Result<T> {
+    success: boolean;
+    msg: string;
+    data: T
+  }
+
+  /** 后端page */
+  interface Page<T> {
+    page: number;
+    size: number;
+    total: number;
+    content: T[]
+  }
 }
 
 /** 主题相关类型 */

@@ -1,6 +1,6 @@
 <template>
   <n-modal v-model:show="modalVisible" preset="card" :title="title" class="w-700px">
-    <n-tree block-line :data="treeData" checkable :checked-keys="checkedKeys" :on-update:checked-keys="setCheckedKeys" expand-on-click />
+    <n-tree block-line :data="treeData" :default-expanded-keys="expandedKeys" checkable :checked-keys="checkedKeys" :on-update:checked-keys="setCheckedKeys" expand-on-click />
     <n-space class="w-full pt-16px" :size="24" justify="end">
       <n-button class="w-72px" @click="closeModal">取消</n-button>
       <n-button class="w-72px" type="primary" @click="handleSubmit">确定</n-button>
@@ -30,8 +30,10 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const treeData = ref<TreeOption[]>([]);
+const expandedKeys = ref<number[]>([]);
 function setTreeData(data: ApiManagement.Resource[]) {
   treeData.value = formatTreeOptions(data);
+  expandedKeys.value = data.map(item => item.id);
 }
 
 function formatTreeOptions(data: ApiManagement.Resource[]): TreeOption[] {
@@ -81,11 +83,11 @@ const closeModal = () => {
 const title = '资源分配'
 
 async function handleSubmit() {
-  const { error } = await updateRoleRel({
+  const { success } = await updateRoleRel({
     roleId: props.roleId,
     resourceIds: checkedKeys.value
   })
-  if (error) {
+  if (!success) {
     window.$message?.error('更新失败');
     return
   }

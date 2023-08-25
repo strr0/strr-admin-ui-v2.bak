@@ -47,6 +47,7 @@ export interface Props {
   /** 编辑的表格行数据 */
   editData?: ApiManagement.User | null;
   roleOptions?: SelectOption[] | null;
+  refresh: any;
 }
 
 export type ModalType = NonNullable<Props['type']>;
@@ -142,16 +143,15 @@ async function handleSubmit() {
   await formRef.value?.validate();
   let formData = {
     ...formModel,
-    roleIds: roleIds
+    roleIds: roleIds.value
   }
-  delete formData.createTime
-  delete formData.updateTime
-  const { error } = await saveUser(formData)
-  if (error) {
+  const { success } = await saveUser(formData)
+  if (!success) {
     window.$message?.error('更新失败');
     return
   }
   window.$message?.success('更新成功');
+  props.refresh();
   closeModal();
 }
 

@@ -125,8 +125,8 @@ function handleAddTable() {
 }
 
 async function handleDeleteTable(application: string) {
-  const { error } = await batchRemoveProperties(application)
-  if (error) {
+  const { success } = await batchRemoveProperties(application)
+  if (!success) {
     window.$message?.error('删除失败');
     return
   }

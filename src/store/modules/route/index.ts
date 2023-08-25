@@ -110,9 +110,9 @@ export const useRouteStore = defineStore('route-store', {
       const { resetAuthStore } = useAuthStore();
       const { initHomeTab } = useTabStore();
 
-      const { error, data } = await fetchUserRoutes();
+      const { success, data } = await fetchUserRoutes();
 
-      if (!error) {
+      if (success) {
         this.routeHomeName = data.home;
         this.handleUpdateRootRedirect(data.home);
         // this.handleAuthRoute(sortRoutes(data.routes));

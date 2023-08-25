@@ -100,8 +100,8 @@ async function handleSubmit() {
       return null
     })
   })
-  const { error } = await batchSaveProperties(formData)
-  if (error) {
+  const { success } = await batchSaveProperties(formData)
+  if (!success) {
     window.$message?.error('新增失败');
     return
   }

@@ -10,14 +10,15 @@ import { fetchUpdateToken } from '../api';
 export async function handleRefreshToken(axiosConfig: AxiosRequestConfig) {
   const { resetAuthStore } = useAuthStore();
   const refreshToken = localStg.get('refreshToken') || '';
-  const { data } = await fetchUpdateToken(refreshToken);
-  if (data) {
-    localStg.set('token', data.access_token);
-    localStg.set('refreshToken', data.refresh_token);
+  localStg.remove('token')
+  const apiToken = await fetchUpdateToken(refreshToken);
+  if (apiToken) {
+    localStg.set('token', apiToken.access_token);
+    localStg.set('refreshToken', apiToken.refresh_token);
 
     const config = { ...axiosConfig };
     if (config.headers) {
-      config.headers.Authorization = `Bearer ${data.access_token}`;
+      config.headers.Authorization = `Bearer ${apiToken.access_token}`;
     }
     return config;
   }

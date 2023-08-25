@@ -1,4 +1,4 @@
-import { request, rawRequest } from '../request';
+import { request, myRequest } from '../request';
 import qs from 'qs'
 
 /**
@@ -16,7 +16,7 @@ export function fetchSmsCode(phone: string) {
  * @param password - 密码
  */
 export function fetchLogin(username: string, password: string) {
-  return request.post<ApiAuth.UserInfo>('/authservice/login', qs.stringify({ username, password }));
+  return myRequest.post<ApiAuth.UserInfo>('/authservice/login', qs.stringify({ username, password }));
 }
 
 /**
@@ -24,17 +24,17 @@ export function fetchLogin(username: string, password: string) {
  * @param resp 
  */
 export async function fetchToken() {
-  let { data } = await rawRequest.get<string>('/authservice/oauth2/authorize', {
+  let responseURL = await myRequest.getRaw<string>('/authservice/oauth2/authorize', {
     params: {
       response_type: 'code',
       client_id: 'WEB_CLIENT',
       scope: 'web'
     }
   })
-  if (data) {
-    let match = /\?code=(.*)/.exec(data)
+  if (responseURL) {
+    let match = /\?code=(.*)/.exec(responseURL)
     if (match) {
-      return rawRequest.post<ApiAuth.Token>('/authservice/oauth2/token', qs.stringify({
+      return myRequest.postRaw<ApiAuth.Token>('/authservice/oauth2/token', qs.stringify({
         grant_type: 'authorization_code',
         scope: 'web',
         client_id: 'WEB_CLIENT',
@@ -43,7 +43,7 @@ export async function fetchToken() {
       }))
     }
   }
-  return { data: null }
+  return null
 }
 
 /** 获取用户信息 */
@@ -57,7 +57,7 @@ export function fetchUserInfo() {
  * @description 后端根据用户id查询到对应的角色类型，并将路由筛选出对应角色的路由数据返回前端
  */
 export function fetchUserRoutes() {
-  return request.get<ApiRoute.Route>('/adminservice/admin/sysResource/getUserRoutes');
+  return myRequest.get<ApiRoute.Route>('/adminservice/admin/sysResource/getUserRoutes');
 }
 
 /**
@@ -65,7 +65,7 @@ export function fetchUserRoutes() {
  * @param refreshToken
  */
 export function fetchUpdateToken(refreshToken: string) {
-  return rawRequest.post<ApiAuth.Token>('/authservice/oauth2/token', qs.stringify({
+  return myRequest.postRaw<ApiAuth.Token>('/authservice/oauth2/token', qs.stringify({
     grant_type: 'refresh_token',
     client_id: 'WEB_CLIENT',
     client_secret: 'WEB_SECRET',

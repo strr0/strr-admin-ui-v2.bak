@@ -15,7 +15,7 @@
           </n-button>
         </n-space>
       </n-space>
-      <n-data-table :columns="columns" :data="tableData" :row-key="item => item.id" :loading="loading" />
+      <n-data-table :columns="columns" :data="tableData" :row-key="item => item.id" virtual-scroll :loading="loading" />
     </n-card>
   </div>
 </template>
@@ -148,15 +148,15 @@ const columns: Ref<DataTableColumns<ApiManagement.Properties>> = ref([
 
 async function handleSaveOrUpdate(row: any) {
   if (row.id) {
-    const { error } = await updateProperties(row)
-    if (error) {
+    const { success } = await updateProperties(row)
+    if (!success) {
       window.$message?.error('更新失败');
       return
     }
     window.$message?.success('更新成功');
   } else {
-    const { error } = await saveProperties(row)
-    if (error) {
+    const { success } = await saveProperties(row)
+    if (!success) {
       window.$message?.error('新增失败');
       return
     }
@@ -169,8 +169,8 @@ function handleAddTable() {
 }
 
 async function handleDeleteTable(id: number) {
-  const { error } = await removeProperties(id)
-  if (error) {
+  const { success } = await removeProperties(id)
+  if (!success) {
     window.$message?.error('删除失败');
     return
   }

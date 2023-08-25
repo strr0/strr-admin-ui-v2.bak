@@ -1,4 +1,4 @@
-import axios, { AxiosInstance } from 'axios';
+import axios from 'axios';
 import type { AxiosResponse, AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
 import { REFRESH_TOKEN_CODE } from '@/config';
 import {
@@ -93,35 +93,7 @@ export class CustomAxiosInstance {
   }
 }
 
-export class RawAxiosInstance {
-  instance: AxiosInstance;
-
-  constructor(
-    axiosConfig: AxiosRequestConfig
-  ) {
-    this.instance = axios.create(axiosConfig);
-    this.setInterceptor();
-  }
-
-  setInterceptor() {
-    this.instance.interceptors.response.use(
-      (async response => {
-        return handleServiceResult(null, response.data)
-      }) as (resp: AxiosResponse<any, any>) => Promise<AxiosResponse<any, any>>,
-      (axiosError: AxiosError) => {
-        // 获取code成功
-        const responseURL = axiosError.request.responseURL
-        if (responseURL.includes('code')) {
-          return handleServiceResult(null, responseURL)
-        }
-        const error = handleAxiosError(axiosError)
-        return handleServiceResult(error, null)
-      }
-    )
-  }
-}
-
-export class PageAxiosInstance {
+export class MyAxiosInstance {
   instance: AxiosInstance;
 
   constructor(
@@ -148,22 +120,38 @@ export class PageAxiosInstance {
         return handleConfig;
       },
       (axiosError: AxiosError) => {
-        const error = handleAxiosError(axiosError);
-        return handleServiceResult(error, null);
+        handleAxiosError(axiosError);
+        return null;
       }
     );
     this.instance.interceptors.response.use(
       (async response => {
         const { status } = response;
         if (status === 200 || status < 300 || status === 304) {
-          return handleServiceResult(null, response.data);
+          return response.data;
         }
-        const error = handleResponseError(response);
-        return handleServiceResult(error, null);
+        handleResponseError(response);
+        return null;
       }) as (resp: AxiosResponse<any, any>) => Promise<AxiosResponse<any, any>>,
-      (axiosError: AxiosError) => {
-        const error = handleAxiosError(axiosError)
-        return handleServiceResult(error, null)
+      async (axiosError: AxiosError) => {
+        // 获取code成功
+        const responseURL = axiosError.request.responseURL
+        if (responseURL.includes('code')) {
+          return responseURL
+        }
+        const response = axiosError.response;
+        // token失效, 刷新token
+        if (response.status === 401) {
+          if (responseURL.includes('/oauth2/token')) {
+            return null
+          }
+          const config = await handleRefreshToken(response.config);
+          if (config) {
+            return this.instance.request(config);
+          }
+        }
+        handleAxiosError(axiosError)
+        return null
       }
     )
   }

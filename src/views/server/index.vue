@@ -41,7 +41,7 @@ function setTableData(data: ApiServer.Server[]) {
 
 async function getTableData() {
   startLoading();
-  const { data } = await fetchServerList();
+  const data = await fetchServerList();
   if (data) {
     setTimeout(() => {
       setTableData(data);
