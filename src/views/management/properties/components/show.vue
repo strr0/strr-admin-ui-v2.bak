@@ -3,7 +3,7 @@
     <n-card title="配置管理" :bordered="false" class="rounded-16px shadow-sm">
       <n-space class="pb-12px" justify="space-between">
         <n-space>
-          <n-button type="primary" @click="handleAddTable" v-permission="'add'">
+          <n-button type="primary" @click="handleAddTable">
             <icon-ic-round-plus class="mr-4px text-20px" />
             新增
           </n-button>
@@ -26,23 +26,21 @@ import type { Ref } from 'vue';
 import { NButton, NPopconfirm, NSpace, NTag } from 'naive-ui';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import { router } from '@/router';
-import { fetchPropertiesList } from '@/service';
-import { useBoolean, useLoading } from '@/hooks';
+import { fetchPropertiesList, saveProperties, updateProperties, removeProperties } from '@/service';
+import { useLoading } from '@/hooks';
 import { useButton } from '@/composables'
 import { ShowOrEdit } from '@/components/custom/show-or-edit'
 
 const { loading, startLoading, endLoading } = useLoading(false);
-const { bool: editVisible, setTrue: openEditModal } = useBoolean();
-const { bool: showVisible, setTrue: openShowModal } = useBoolean();
 const { hasButton } = useButton();
 
 function initQueryParam() {
-  const route = router.currentRoute.value;
-  setApplication(route.query?.application)
+  const application = router.currentRoute.value.query?.application;
+  setApplication(application as string)
 }
 
-const application = ref<string | (string|null)[] | null>(null)
-function setApplication(data: string | (string|null)[] | null) {
+const application = ref<string | null>(null)
+function setApplication(data: string) {
   application.value = data
 }
 
@@ -133,7 +131,7 @@ const columns: Ref<DataTableColumns<ApiManagement.Properties>> = ref([
     render: row => {
       return (
         <NSpace justify={'center'}>
-          <NButton size={'small'} onClick={() => handleShowTable(row)}>
+          <NButton size={'small'} onClick={() => handleSaveOrUpdate(row)}>
             保存
           </NButton>
           <NPopconfirm onPositiveClick={() => handleDeleteTable(row.id)}>
@@ -148,32 +146,35 @@ const columns: Ref<DataTableColumns<ApiManagement.Properties>> = ref([
   }
 ]) as Ref<DataTableColumns<ApiManagement.Properties>>;
 
-const rowData = ref<ApiManagement.Properties | null>(null);
-
-function setRowData(data: ApiManagement.Properties | null) {
-  rowData.value = data;
-}
-
-function handleShowTable(row: any) {
-  setRowData(row);
-  openShowModal();
+async function handleSaveOrUpdate(row: any) {
+  if (row.id) {
+    const { error } = await updateProperties(row)
+    if (error) {
+      window.$message?.error('更新失败');
+      return
+    }
+    window.$message?.success('更新成功');
+  } else {
+    const { error } = await saveProperties(row)
+    if (error) {
+      window.$message?.error('新增失败');
+      return
+    }
+    window.$message?.success('新增成功');
+  }
 }
 
 function handleAddTable() {
-  openEditModal();
-}
-
-function handleEditTable(row: any) {
-  setRowData(row);
-  openEditModal();
+  tableData.value.push({ application: application.value })
 }
 
 async function handleDeleteTable(id: number) {
-  // const { error } = await removeUser(id)
-  // if (error) {
-  //   window.$message?.error('删除失败');
-  //   return
-  // }
+  const { error } = await removeProperties(id)
+  if (error) {
+    window.$message?.error('删除失败');
+    return
+  }
+  getTableData();
   window.$message?.success('删除成功');
 }
 
