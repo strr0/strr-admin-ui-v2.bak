@@ -222,7 +222,11 @@ export function createMyRequest(axiosConfig: AxiosRequestConfig) {
    */
   async function get<T>(url: string, config?: AxiosRequestConfig) {
     const { instance } = myInstance;
-    return (await instance.get(url, config)) as Service.Result<T>;
+    const result = await instance.get(url, config)
+    if (result) {
+      return result as Service.Result<T>;
+    }
+    return myErrorResult;
   }
 
   /**
@@ -233,7 +237,11 @@ export function createMyRequest(axiosConfig: AxiosRequestConfig) {
    */
   async function post<T>(url: string, data?: any, config?: AxiosRequestConfig) {
     const { instance } = myInstance;
-    return (await instance.post(url, data, config)) as Service.Result<T>;
+    const result = await instance.post(url, data, config)
+    if (result) {
+      return result as Service.Result<T>;
+    }
+    return myErrorResult
   }
   /**
    * put请求
@@ -243,7 +251,11 @@ export function createMyRequest(axiosConfig: AxiosRequestConfig) {
    */
   async function put<T>(url: string, data?: any, config?: AxiosRequestConfig) {
     const { instance } = myInstance;
-    return (await instance.put(url, data, config)) as Service.Result<T>;
+    const result = await instance.put(url, data, config)
+    if (result) {
+      return result as Service.Result<T>;
+    }
+    return myErrorResult
   }
 
   /**
@@ -253,7 +265,11 @@ export function createMyRequest(axiosConfig: AxiosRequestConfig) {
    */
   async function handleDelete<T>(url: string, config?: AxiosRequestConfig) {
     const { instance } = myInstance;
-    return (await instance.delete(url, config)) as Service.Result<T>;
+    const result = await instance.delete(url, config)
+    if (result) {
+      return result as Service.Result<T>;
+    }
+    return myErrorResult
   }
 
   /**
@@ -284,7 +300,11 @@ export function createMyRequest(axiosConfig: AxiosRequestConfig) {
    */
   async function page<T>(url: string, config?: AxiosRequestConfig) {
     const { instance } = myInstance;
-    return (await instance.get(url, config)) as Service.Page<T>;
+    const page = await instance.get(url, config)
+    if (page) {
+      return page as Service.Page<T>;
+    }
+    return myErrorPage
   }
 
   return {
@@ -296,4 +316,17 @@ export function createMyRequest(axiosConfig: AxiosRequestConfig) {
     postRaw,
     page
   };
+}
+
+const myErrorResult: Service.Result<any> = {
+  success: false,
+  msg: '',
+  data: null
+}
+
+const myErrorPage: Service.Page<any> = {
+  page: 1,
+  size: 10,
+  total: 0,
+  content: []
 }
