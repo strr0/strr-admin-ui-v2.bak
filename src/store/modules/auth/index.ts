@@ -1,7 +1,7 @@
 import { unref, nextTick } from 'vue';
 import { defineStore } from 'pinia';
 import { router } from '@/router';
-import { fetchLogin, fetchUserInfo, fetchToken } from '@/service';
+import { fetchLogin, fetchUserInfo } from '@/service';
 import { useRouterPush } from '@/composables';
 import { localStg } from '@/utils';
 import { useTabStore } from '../tab';
@@ -53,16 +53,11 @@ export const useAuthStore = defineStore('auth-store', {
      * 处理登录后成功或失败的逻辑
      * @param backendToken - 返回的token
      */
-    async handleActionAfterLogin() {
+    async handleActionAfterLogin(backendToken: ApiAuth.Token) {
       const route = useRouteStore();
       const { toLoginRedirect } = useRouterPush(false);
 
-      let loginSuccess = false
-
-      const apiToken = await fetchToken()
-      if (apiToken) {
-        loginSuccess = this.loginByToken(apiToken)
-      }
+      let loginSuccess = await this.loginByToken(backendToken);
 
       if (loginSuccess) {
         await route.initAuthRoute();
@@ -89,14 +84,28 @@ export const useAuthStore = defineStore('auth-store', {
      * 根据token进行登录
      * @param backendToken - 返回的token
      */
-    loginByToken(backendToken: ApiAuth.Token) {
+    async loginByToken(backendToken: ApiAuth.Token) {
+      let successFlag = false;
+
       // 先把token存储到缓存中(后面接口的请求头需要token)
       const { access_token, refresh_token } = backendToken;
       localStg.set('token', access_token);
       localStg.set('refreshToken', refresh_token);
-      this.token = access_token;
+      
+      // 获取用户信息
+      const { data } = await fetchUserInfo();
+      if (data) {
+        // 成功后把用户信息存储到缓存中
+        localStg.set('userInfo', data);
 
-      return true;
+        // 更新状态
+        this.userInfo = data;
+        this.token = access_token;
+
+        successFlag = true;
+      }
+
+      return successFlag;
     },
     /**
      * 登录
@@ -105,12 +114,9 @@ export const useAuthStore = defineStore('auth-store', {
      */
     async login(username: string, password: string) {
       this.loginLoading = true;
-      const { success, data } = await fetchLogin(username, password);
-      if (success) {
-        // 成功后把用户信息存储到缓存中
-        localStg.set('userInfo', data);
-        this.userInfo = data
-        await this.handleActionAfterLogin();
+      const data = await fetchLogin(username, password);
+      if (data) {
+        await this.handleActionAfterLogin(data);
       }
       this.loginLoading = false;
     },
@@ -136,13 +142,9 @@ export const useAuthStore = defineStore('auth-store', {
         }
       };
       const { username, password } = accounts[userRole];
-      const fetch = await fetchLogin(username, password);
-      if (!fetch || !fetch.success) {
-        return
-      }
-      const apiToken = await fetchToken()
-      if (apiToken) {
-        await this.loginByToken(apiToken);
+      const data = await fetchLogin(username, password);
+      if (data) {
+        await this.loginByToken(data);
         resetRouteStore();
         initAuthRoute();
       }
