@@ -88,9 +88,9 @@ export const useAuthStore = defineStore('auth-store', {
       let successFlag = false;
 
       // 先把token存储到缓存中(后面接口的请求头需要token)
-      const { access_token, refresh_token } = backendToken;
-      localStg.set('token', access_token);
-      localStg.set('refreshToken', refresh_token);
+      const { accessToken, refreshToken } = backendToken;
+      localStg.set('token', accessToken);
+      localStg.set('refreshToken', refreshToken);
       
       // 获取用户信息
       const { data } = await fetchUserInfo();
@@ -100,7 +100,7 @@ export const useAuthStore = defineStore('auth-store', {
 
         // 更新状态
         this.userInfo = data;
-        this.token = access_token;
+        this.token = accessToken;
 
         successFlag = true;
       }

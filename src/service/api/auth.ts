@@ -16,14 +16,14 @@ export function fetchSmsCode(phone: string) {
  * @param password - 密码
  */
 export function fetchLogin(username: string, password: string) {
-  return myRequest.postRaw<ApiAuth.Token>('/strr-auth/oauth2/token', qs.stringify({
-    grant_type: 'password',
-    scope: 'web',
-    client_id: 'WEB_CLIENT',
-    client_secret: 'WEB_SECRET',
+  return myRequest.postRaw<ApiAuth.Token>('/strr-auth/login', {
     username: username,
     password: password
-  }))
+  }, {
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    }
+  })
 }
 
 /** 获取用户信息 */

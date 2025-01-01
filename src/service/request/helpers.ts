@@ -13,12 +13,12 @@ export async function handleRefreshToken(axiosConfig: AxiosRequestConfig) {
   localStg.remove('token')
   const apiToken = await fetchUpdateToken(refreshToken);
   if (apiToken) {
-    localStg.set('token', apiToken.access_token);
-    localStg.set('refreshToken', apiToken.refresh_token);
+    localStg.set('token', apiToken.accessToken);
+    localStg.set('refreshToken', apiToken.refreshToken);
 
     const config = { ...axiosConfig };
     if (config.headers) {
-      config.headers.Authorization = `Bearer ${apiToken.access_token}`;
+      config.headers.Authorization = `Bearer ${apiToken.accessToken}`;
     }
     return config;
   }
